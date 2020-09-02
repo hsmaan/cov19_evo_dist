@@ -3,7 +3,10 @@ library(stringr)
 library(DECIPHER)
 library(ape)
 library(data.table)
-library(uwot)
+
+# Masked sites (homoplasic)
+
+mask_sites <- c(187, 1059, 2094, 3037, 3130, 6990, 8022, 10323, 10741, 11074, 13408, 14786, 19684, 20148, 21137, 24034, 24378, 25563, 26144, 26461, 26681, 28077, 28826, 28854, 29700, 4050, 13402, 11083, 15324, 21575)
 
 # Functions from CovidGenotyper/R/global.R  
 
@@ -24,8 +27,7 @@ align_get <- function(fastas, align_iters, align_refs, ncores) {
 }
 
 dist_get <- function(align, metric) {
-  
-  mask_sites <- c(187, 1059, 2094, 3037, 3130, 6990, 8022, 10323, 10741, 11074, 13408, 14786, 19684, 20148, 21137, 24034, 24378, 25563, 26144, 26461, 26681, 28077, 28826, 28854, 29700, 4050, 13402, 11083, 15324, 21575)
+
   align_mat <- as.matrix(align)
   align_mat_sub <- align_mat[, -mask_sites]
   align_mat_bin <- as.DNAbin(align_mat_sub)
@@ -85,4 +87,25 @@ fasta_aligned <- align_get(con_fasta, align_iters = iters, align_refs = refs, nc
 # Get DNA distance 
 
 fasta_dist <- dist_get(fasta_aligned, metric = dist_method)
+
+# Convert to data table
+
+fasta_dist_dt <- as.data.table(fasta_dist, keep.rownames = TRUE)
+
+# Create output dir 
+
+if (!dir.exists("out")) {
+  dir.create("out")
+}
+
+# Get file name of input 
+
+file_name_no_ext <- str_split_fixed(fasta_file, fixed("."), 2)[1]
+
+file_name_no_ext_whitespace <- gsub(" ", "", file_name_no_ext, fixed = TRUE)
+
+# Write dist tsv to out dir
+
+fwrite(fasta_dist_dt, file = paste0("out/", file_name_no_ext_whitespace, "_dist_matrix.tsv"), sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+
 

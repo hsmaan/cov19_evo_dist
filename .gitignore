@@ -7,4 +7,4 @@
 *.RData
 *.RDS
 data*
-outs*
+out*
