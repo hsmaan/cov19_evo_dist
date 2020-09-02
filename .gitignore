@@ -1,0 +1,10 @@
+*.csv
+*.tsv
+*.pdf
+*.log
+*.txt
+*.Rhistory
+*.RData
+*.RDS
+data*
+outs*
