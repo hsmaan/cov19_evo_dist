@@ -108,4 +108,5 @@ file_name_no_ext_whitespace <- gsub(" ", "", file_name_no_ext, fixed = TRUE)
 
 fwrite(fasta_dist_dt, file = paste0("out/", file_name_no_ext_whitespace, "_dist_matrix.tsv"), sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
 
+print(paste0("Alignment and distance calculation complete. File saved in out/", file_name_no_ext_whitespace, ".tsv"))
 

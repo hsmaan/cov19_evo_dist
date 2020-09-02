@@ -13,48 +13,47 @@ knitr::opts_chunk$set(
 )
 ```
 
-# SIGNAL UMAP 
+# COVID-19 Evolutionary Distance
 
-Post-assembly consensus fasta sequence clustering of SARS-CoV-2 viral isolates with respect to GISAID data.
+An evolutionary distance calculation tool for SARS-CoV-2 viral genomes that removes the following homoplasic sites:
+
+**187, 1059, 2094, 3037, 3130, 6990, 8022, 10323, 10741, 11074, 13408, 14786, 19684, 20148, 21137, 24034, 24378, 25563, 26144, 26461, 26681, 28077, 28826, 28854, 29700, 4050, 13402, 11083, 15324, 21575**
 
 ## Overview
 
-All post-assembly consensus fastas can be appended to one `fasta` file, and along with a `.txt` file containing newline separated locations of the viral isolate (should be country or more fine-grained), can be analyzed in parallel (**see example files**). New folders corresponding to the sequences will be created in the `data` folder, with naming convention `Seq_n_[fasta_header]`. Two umap plots will be created - one with region of origin `Seq_n_[fasta_header]_umap_region.pdf` and one with country of origin (zoomed in) `Seq_n_[fasta_header]_umap_country_zoom.pdf`. The level of zoom can be set (**2.5-5** is best - this corresponds to upper and lower bound of UMAP coordinates around input sequence). A tsv file containing the metadata for the "zoomed in" cluster and corresponding GISAID sequences is also output `Seq_n_[fasta_header]_umap_data.tsv`. This tsv file contains UMAP coordinates, country and region of origin, and travel history associated with GISAID accessions nearby the input sequence. 
-
-The script options are the following (**see example files**):
+The script options are the following (**ensure input_fasta is in same directory as cov19_evo_dist**):
 ```
-Rscript --verbose umap.R [input_fasta] [location_txt] [cores] [zoom_level] [length_cutoff] [ambg_nucleotide_cutoff]
+Rscript --verbose evo_dist.R [input_fasta] [length_cutoff] [ambg_nucleotide_cutoff] [dist_method] [iterations] [refinements] [cores] 
 ```
-* input_fasta: location of the input fasta file containing query sequences [file]
-* location_txt: location of the matched metadata txt file containing sampling location of the query sequences [file]
-* cores: number of cores to utilize during processing [1-n]
-* zoom_level: "radius" of square around query sequence, in UMAP dimension 1 and 2 units [0-100]
+* input_fasta: location of the input fasta file containing query sequences - ensure it's in same directory as cov19_evo_dist [file]
 * length_cutoff: minimum length of query sequences for filtering [0-30000]
 * ambg_nucleotide_cutoff: maximum percentage of ambiguous nucleotides in query sequences for filtering [0-1]
+* dist_method: The evolutionary distance metric to use from the ape library. "K80" is recommended. More information is available in the ape documentation https://www.rdocumentation.org/packages/ape/versions/5.4-1/topics/dist.dna, under the "model" parameter. [model_name]
+* iterations: Number of iterations for multiple sequence alignment algorithm - 0 recommended unless sequences are particularly low quality (then 5-6). [0-n]
+* refinements: Refinement steps for the multiple sequence alignment algorithm - 0 recommended unless sequences are particularly low quality (then 2-3). [0-n]
+* cores: number of cores to utilize during processing [1-n]
 
 E.g:
 ```
-Rscript --verbose umap.R example_data/example.fasta example_data/example_hist.txt 4 2.5 29000 0.05
+Rscript --verbose evo_dist.R example.fasta 29000 0.1 K80 0 0 2
 ```
+
+Output is saved to **out** folder under same name as input file
+
 ## Installation
 
 Clone repository:
 ```
-git clone https://github.com/hsmaan/signal_umap.git
-```
-
-Get GISAID data from Google API:
-```
-sh gisaid_data_setup.sh
+git clone https://github.com/hsmaan/cov19_evo_dist.git
 ```
 
 Set up and activate conda environment:
 ```
-conda env create --name umap_env --file umap.yaml
-conda activate umap_env
+conda env create --name evo_env --file evo_dist.yaml
+conda activate evo_env
 ```
 
-Run with example data:
+Example run:
 ```
-Rscript --verbose umap.R example_data/example.fasta example_data/example_hist.txt 4 2.5 29000 0.05 > umap.log 2>&1
+Rscript --verbose evo_dist.R example.fasta 29000 0.1 K80 0 0 2
 ```
